@@ -3,10 +3,11 @@ import {SessionComponent} from "./2_SessionComponent";
 import {PromptComponent} from "./4_PromptComponent";
 import {JobComponent} from "./3_JobComponent";
 import {Tab} from "./TabComponent";
-import {KeyCode, SplitDirection, Status} from "../Enums";
+import {SplitDirection, Status, KeyboardAction} from "../Enums";
 import {isModifierKey} from "./ViewUtils";
 import {SearchComponent} from "./SearchComponent";
 import {remote} from "electron";
+import {getActionForKeyboardEvent} from "./keyevents/Keybindings";
 
 export type UserEvent = KeyboardEvent | ClipboardEvent;
 
@@ -33,158 +34,115 @@ export const handleUserEvent = (application: ApplicationComponent,
 
         return;
     }
-    console.log(event.keyCode);
 
-    if (event.ctrlKey && event.keyCode === KeyCode.D && !isInProgress(job)) {
-        application.closeFocusedPane();
+    let actions = getActionForKeyboardEvent(event);
 
-        application.forceUpdate();
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
+    // No keybinding just regular text
+    if (actions.length === 0) {
+      prompt.setPreviousKeyCode(event);
+      return;
     }
 
-    if (event.metaKey && event.keyCode >= KeyCode.One && event.keyCode <= KeyCode.Nine) {
-        const position = parseInt(event.key, 10);
-        application.focusTab(position);
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
-    }
-
-    if (event.metaKey && event.keyCode === KeyCode.D) {
-        window.DEBUG = !window.DEBUG;
-
-        require("devtron").install();
-        console.log(`Debugging mode has been ${window.DEBUG ? "enabled" : "disabled"}.`);
-
-        application.forceUpdate();
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
-    }
-
-    if (event.ctrlKey && event.keyCode === KeyCode.L && !isInProgress(job)) {
-        session.props.session.clearJobs();
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
-    }
-
-    if (event.metaKey) {
-        event.stopPropagation();
-        // Don't prevent default to be able to open developer tools and such.
-        return;
-    }
-
-    if (search.isFocused) {
-        if (event.keyCode === KeyCode.Escape) {
+    for (let actionInd = 0; actionInd < actions.length; actionInd++) {
+      let action = actions[actionInd];
+      switch (action) {
+        // CLI commands
+        case KeyboardAction.cliRunCommand:
+          if (!isInProgress(job)) {
+            prompt.focus();
+            prompt.execute((event.target as HTMLElement).innerText);
+          }
+          break;
+        case KeyboardAction.cliInterrupt:
+          if (isInProgress(job)) {
+            job.props.job.interrupt();
+          }
+          break;
+        case KeyboardAction.cliClearJobs:
+          if (!isInProgress(job)) {
+            session.props.session.clearJobs();
+          }
+          break;
+        case KeyboardAction.cliDeleteWord:
+          if (!isInProgress(job)) {
+            prompt.focus();
+            prompt.deleteWord();
+          }
+          break;
+        case KeyboardAction.cliClearText:
+          if (!isInProgress(job)) {
+            prompt.focus();
+            prompt.clear();
+          }
+          break;
+        case KeyboardAction.cliAppendLastArgumentOfPreviousCommand:
+          prompt.focus();
+          prompt.appendLastLArgumentOfPreviousCommand();
+          break;
+        case KeyboardAction.cliHistoryPrevious:
+          if (!isInProgress(job) && !prompt.isAutocompleteShown()) {
+            prompt.focus();
+            prompt.setPreviousHistoryItem();
+          }
+          break;
+        case KeyboardAction.cliHistoryNext:
+          if (!isInProgress(job) && !prompt.isAutocompleteShown()) {
+            prompt.focus();
+            prompt.setNextHistoryItem();
+          }
+          break;
+        // Tab Commands
+        case KeyboardAction.tabClose:
+          if (!isInProgress(job)) {
+            application.closeFocusedPane();
+            application.forceUpdate();
+          }
+          break;
+        case KeyboardAction.tabFocus:
+          const position = parseInt(event.key, 10);
+          application.focusTab(position);
+          break;
+        // Search commands
+        case KeyboardAction.editFindClose:
+          if (search.isFocused) {
             search.clearSelection();
             setTimeout(() => prompt.focus(), 0);
+          }
+          break;
+        // Autocomplete commands
+        case KeyboardAction.autocompleteInsertCompletion:
+          if (prompt.isAutocompleteShown()) {
+            prompt.focus();
+            prompt.applySuggestion();
+          }
+          break;
+        case KeyboardAction.autocompletePreviousSuggestion:
+          if (prompt.isAutocompleteShown()) {
+            prompt.focus();
+            prompt.focusPreviousSuggestion();
+          }
+          break;
+        case KeyboardAction.autocompleteNextSuggestion:
+          if (prompt.isAutocompleteShown()) {
+            prompt.focus();
+            prompt.focusNextSuggestion();
+          }
+          break;
+        // Dev commands
+        case KeyboardAction.developerToggleDebugMode:
+          window.DEBUG = !window.DEBUG;
+          require("devtron").install();
+          console.log(`Debugging mode has been ${window.DEBUG ? "enabled" : "disabled"}.`);
+          application.forceUpdate();
+          break;
 
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-
-        return;
+        default:
+          console.warn("Missing action code for " + KeyboardAction[action]);
+      }
     }
 
-    if (isInProgress(job) && !isModifierKey(event)) {
-        if (event.ctrlKey && event.keyCode === KeyCode.C) {
-            job.props.job.interrupt();
-        } else {
-            job.props.job.write(event);
-        }
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
-    }
-
-    prompt.focus();
-
-    if (event.keyCode === KeyCode.Period && event.altKey) {
-        prompt.appendLastLArgumentOfPreviousCommand();
-
-        event.stopPropagation();
-        event.preventDefault();
-        return;
-    }
-
-    if (!isInProgress(job)) {
-        if (event.ctrlKey && event.keyCode === KeyCode.W) {
-            prompt.deleteWord();
-
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-
-        if (event.keyCode === KeyCode.CarriageReturn) {
-            prompt.execute((event.target as HTMLElement).innerText);
-
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-
-        if (event.ctrlKey && event.keyCode === KeyCode.C) {
-            prompt.clear();
-
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-
-        if (prompt.isAutocompleteShown()) {
-            if (event.keyCode === KeyCode.Tab) {
-                prompt.applySuggestion();
-
-                event.stopPropagation();
-                event.preventDefault();
-                return;
-            }
-
-            if ((event.ctrlKey && event.keyCode === KeyCode.P) || event.keyCode === KeyCode.Up) {
-                prompt.focusPreviousSuggestion();
-
-                event.stopPropagation();
-                event.preventDefault();
-                return;
-            }
-
-            if ((event.ctrlKey && event.keyCode === KeyCode.N) || event.keyCode === KeyCode.Down) {
-                prompt.focusNextSuggestion();
-
-                event.stopPropagation();
-                event.preventDefault();
-                return;
-            }
-        } else {
-            if ((event.ctrlKey && event.keyCode === KeyCode.P) || event.keyCode === KeyCode.Up) {
-                prompt.setPreviousHistoryItem();
-
-                event.stopPropagation();
-                event.preventDefault();
-                return;
-            }
-
-            if ((event.ctrlKey && event.keyCode === KeyCode.N) || event.keyCode === KeyCode.Down) {
-                prompt.setNextHistoryItem();
-
-                event.stopPropagation();
-                event.preventDefault();
-                return;
-            }
-        }
-    }
-
-    prompt.setPreviousKeyCode(event);
+    event.stopPropagation();
+    event.preventDefault();
 };
 
 function isInProgress(job: JobComponent): boolean {
