@@ -1,18 +1,4 @@
 Editor Event List
-// any time
-focusTab: meta + num(1-9)
-enableDebug: meta + shift + D
-appendLastLArgumentOfPreviousCommand: alt+.
-// job running
-interrupt: ctrl+c
-// search focused
-exitSearch: escape
-// job not running
-run command: carriageReturn
-clearJobs: ctrl+L
-closeFocusedPane: ctrl+D
-deleteWord: ctrl+w
-clear text: ctrl+c
 // autocomplete shown
 insert completion: tab
 focus previous suggestion: ctrl + p || up
@@ -20,12 +6,25 @@ focus next suggestion: ctrl + n || down
 // no autocomplete shown
 previous history item: ctrl + p || up
 next history item: ctrl + n || down
+// job running
+interrupt: ctrl+c
+// job not running
+appendLastLArgumentOfPreviousCommand: alt+.
+run command: carriageReturn
+clearJobs: ctrl+L
+deleteWord: ctrl+w
+clear text: ctrl+c
 
+// any time
+closeFocusedPane: ctrl+D
+enableDebug: meta + shift + D
+// search focused
+exitSearch: escape
 Panel event items
 //Black Screen
 hide app: meta + h
 quit: meta + q
-//Edit unbindable
+//Edit
 undo: meta osx/ctrl + z
 redo: meta osx/ctrl + shift + z
 find: meta osx/ctrl + f
@@ -38,10 +37,11 @@ reload: meta + r
 toggle full screen: meta + ctrl + f
 toggle developer tools: alt + meta + i
 //Window
-add tab: meta + t
 split horizontally: meta + -
 split vertically: meta + \
-//Pane
+//Tabs
+add tab: meta + t
 previous: meta + k
 next: meta + j
 close: meta + w
+focusTab: meta + num(1-9)

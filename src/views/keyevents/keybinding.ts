@@ -8,6 +8,13 @@ import {isModifierKey} from "./ViewUtils";
 import {SearchComponent} from "./SearchComponent";
 import {remote} from "electron";
 
+export function getActionForKeyboardEvent(event: KeyboardEvent){
+  // get the action that corresponds to the key press and return it
+
+}
+
+function _stringToKey
+
 export type UserEvent = KeyboardEvent | ClipboardEvent;
 
 export const handleUserEvent = (application: ApplicationComponent,

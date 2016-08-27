@@ -1,0 +1,109 @@
+options:
+  linuxMetaKey: "Ctrl"
+
+commands: [
+  # CLI commands
+  action: "cliRunCommand"
+  keybinding: "CarriageReturn"
+,
+  action: "cliInterrupt"
+  keybinding: "Ctrl+C"
+,
+  action: "cliClearJobs"
+  keybinding: "Ctrl+L"
+,
+  action: "cliDeleteWord"
+  keybinding: "Ctrl+W"
+,
+  action: "cliClearText"
+  keybinding: "Ctrl+C"
+,
+  action: "cliAppendLastArgumentOfPreviousCommand"
+  keybinding: "Alt+."
+,
+  action: "cliHistoryPrevious"
+  keybinding: ["Ctrl+P", "Up"]
+,
+  action: "cliHistoryNext"
+  keybinding: ["Ctrl+N", "Down"]
+,
+  # autocomplete commands
+  action: "autocompleteInsertCompletion"
+  keybinding: "Tab"
+,
+  action: "autocompletePreviousSuggestion"
+  keybinding: ["Ctrl+P", "Up"]
+,
+  action: "autocompleteNextSuggestion"
+  keybinding: ["Ctrl+N", "Down"]
+,
+  # tab commands
+  action: "tabNew"
+  keybinding: "Meta+T"
+,
+  action: "tabFocus"
+  keybinding: "Ctrl+Num{1-9}"
+,
+  action: "tabPrevious"
+  keybinding: "Meta+K"
+,
+  action: "tabNext"
+  keybinding: "Meta+J"
+,
+  action: "tabClose"
+  keybinding: ["Meta+W", "Ctrl+D"]
+,
+  # edit/clipboard commands
+  action: "clipboadCopy"
+  keybinding: "Meta+C"
+,
+  action: "clipboadCut"
+  keybinding: "Meta+X"
+,
+  action: "clipboadPaste"
+  keybinding: "Meta+V"
+,
+  action: "editUndo"
+  keybinding: "Meta+Z"
+,
+  action: "editRedo"
+  keybinding: "Meta+Shift+Z"
+,
+  action: "editSelectAll"
+  keybinding: "Meta+A"
+,
+  action: "editFind"
+  keybinding: "Meta+F"
+,
+  action: "editFindClose"
+  keybinding: "Esc"
+,
+  # window commands
+  action: "windowSplitHorizontally"
+  keybinding: "Meta+-"
+,
+  action: "windowSplitVertically"
+  keybinding: "Meta+\\"
+,
+  # view commands
+  action: "viewReload"
+  keybinding: "Meta+R"
+,
+  action: "viewToggleFullScreen"
+  keybinding: "Meta+Ctrl+F"
+,
+  # black screen commands
+  action: "blackScreenHide"
+  keybinding: "Meta+H"
+,
+  action: "blackScreenQuit"
+  keybinding: "Meta+Q"
+,
+  # developer
+  action: "developerToggleTools"
+  keybinding: "Meta+Alt+I"
+,
+  action: "developerToggleDebugMode",
+  keybinding: "Meta+D"
+,
+]
