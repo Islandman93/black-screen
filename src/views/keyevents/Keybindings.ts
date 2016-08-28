@@ -19,7 +19,7 @@ function isMeta(e: KeyboardEvent): boolean {
   return false;
 }
 
-export const Keybindings: KeybindingType[] = [
+export const KeybindingsForActions: KeybindingType[] = [
     // CLI commands
     {
       action: KeyboardAction.cliRunCommand,
@@ -91,9 +91,19 @@ export const Keybindings: KeybindingType[] = [
       keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Escape,
     },
 ];
-  //   action: KeyboardAction.tabPrevious,
-  //   keybinding: "Meta+K,
-  //   },
+
+export function getActionForKeyboardEvent(event: KeyboardEvent) {
+  // filter the action that corresponds to the key press
+  let filteredCommands: KeybindingType[] = KeybindingsForActions.filter((keybinding) => {
+      return keybinding.keybinding(event);
+  });
+  return filteredCommands.map((command) => command.action);
+}
+
+// export const KeybindingsForMenu: KeybindingType[] = [
+//     action: KeyboardAction.tabPrevious,
+//     keybinding: "Meta+K,
+//     },
   //   action: KeyboardAction.tabNext,
   //   keybinding: "Meta+J,
   //   },
@@ -154,10 +164,3 @@ export const Keybindings: KeybindingType[] = [
   //   keybinding: "Meta+D,
   //   },
   // ]
-  export function getActionForKeyboardEvent(event: KeyboardEvent) {
-    // filter the action that corresponds to the key press
-    let filteredCommands: KeybindingType[] = Keybindings.filter((keybinding) => {
-        return keybinding.keybinding(event);
-    });
-    return filteredCommands.map((command) => command.action);
-  }
