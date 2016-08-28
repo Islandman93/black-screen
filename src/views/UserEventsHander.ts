@@ -54,8 +54,12 @@ export const handleUserEvent = (application: ApplicationComponent,
           }
           break;
         case KeyboardAction.cliInterrupt:
+          // CLI interrupt is special and terminates all other keybindings after it
           if (isInProgress(job)) {
             job.props.job.interrupt();
+            event.stopPropagation();
+            event.preventDefault();
+            return;
           }
           break;
         case KeyboardAction.cliClearJobs:
