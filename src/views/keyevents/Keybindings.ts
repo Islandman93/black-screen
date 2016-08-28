@@ -5,7 +5,6 @@ export type KeybindingType = {
   keybinding: (e: KeyboardEvent) => boolean,
 };
 
-
 function isMeta(e: KeyboardEvent): boolean {
   /**
    * Decides if a keyboard event contains the meta key for all platforms
@@ -19,7 +18,6 @@ function isMeta(e: KeyboardEvent): boolean {
   }
   return false;
 }
-
 
 export const Keybindings: KeybindingType[] = [
     // CLI commands
@@ -81,11 +79,18 @@ export const Keybindings: KeybindingType[] = [
       action: KeyboardAction.tabNew,
       keybinding: (e: KeyboardEvent) => isMeta(e) && e.keyCode === KeyCode.T,
     },
-  ];
-  //   {
-  //     action: KeyboardAction.tabFocus,
-  //     keybinding: "Ctrl+Num{1-9},
-  //   },
+    {
+      action: KeyboardAction.tabFocus,
+      keybinding: (e: KeyboardEvent) => {
+        return (e.ctrlKey && e.keyCode >= KeyCode.One && e.keyCode <= KeyCode.Nine);
+      },
+    },
+    // search commands
+    {
+      action: KeyboardAction.editFindClose,
+      keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Escape,
+    },
+];
   //   action: KeyboardAction.tabPrevious,
   //   keybinding: "Meta+K,
   //   },

@@ -39,7 +39,12 @@ export const handleUserEvent = (application: ApplicationComponent,
 
     // No keybinding just regular text
     if (actions.length === 0) {
-      prompt.setPreviousKeyCode(event);
+      // If no job then send to prompt
+      if (!isInProgress(job)) {
+        prompt.setPreviousKeyCode(event);
+      } else { // else send to running job
+        job.props.job.write(event);
+      }
       return;
     }
 
