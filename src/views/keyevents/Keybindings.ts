@@ -6,6 +6,20 @@ export type KeybindingType = {
     keybinding: (e: KeyboardEvent) => boolean,
 };
 
+function isMeta(e: KeyboardEvent): boolean {
+    /**
+     * Decides if a keyboard event contains the meta key for all platforms
+     * Linux does not support the metaKey so it can be manually changed here
+     * Windows/OSX is simply e.metaKey
+     */
+    if (e.metaKey) {
+        return true;
+    } else if (process.platform === "linux") {
+        return e.ctrlKey;
+    }
+    return false;
+}
+
 export const KeybindingsForActions: KeybindingType[] = [
     // CLI commands
     {
@@ -63,11 +77,10 @@ export const KeybindingsForActions: KeybindingType[] = [
         },
     },
     // tab commands
-    // tab new is handled in the menu look at KeybindingsForMenu
-    // {
-    //     action: KeyboardAction.tabNew,
-    //     keybinding: (e: KeyboardEvent) => isMeta(e) && e.keyCode === KeyCode.T,
-    // },
+    {
+        action: KeyboardAction.tabClose,
+        keybinding: (e: KeyboardEvent) => isMeta(e) && e.keyCode === KeyCode.D,
+    },
     {
         action: KeyboardAction.tabFocus,
         keybinding: (e: KeyboardEvent) => {
@@ -89,8 +102,8 @@ export function isKeybidingForEvent(event: KeyboardEvent, action: KeyboardAction
         return keybinding.action === action;
     });
     if (matchingKeyboardAction.length === 0) {
-      error("No matching keybinding for action: " + KeyboardAction[action]);
-      return false;
+        error("No matching keybinding for action: " + KeyboardAction[action]);
+        return false;
     }
     return matchingKeyboardAction[0].keybinding(event);
 }

@@ -36,15 +36,16 @@ export const handleUserEvent = (application: ApplicationComponent,
             return;
         }
 
-        // if (isKeybidingForEvent && !isInProgress(job)) {
-        //     application.closeFocusedPane();
-        //
-        //     application.forceUpdate();
-        //
-        //     event.stopPropagation();
-        //     event.preventDefault();
-        //     return;
-        // }
+        // Close focused pane
+        if (isKeybidingForEvent(event, KeyboardAction.tabClose) && !isInProgress(job)) {
+            application.closeFocusedPane();
+
+            application.forceUpdate();
+
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
 
         // Change tab action
         if (isKeybidingForEvent(event, KeyboardAction.tabFocus)) {
