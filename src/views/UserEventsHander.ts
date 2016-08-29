@@ -4,10 +4,11 @@ import {PromptComponent} from "./4_PromptComponent";
 import {JobComponent} from "./3_JobComponent";
 import {Tab} from "./TabComponent";
 import {Status, KeyboardAction} from "../Enums";
+import {isModifierKey} from "./ViewUtils";
 import {SearchComponent} from "./SearchComponent";
 import {remote} from "electron";
 import {buildMenuTemplate} from "./menu/Menu";
-import {getActionForKeyboardEvent} from "./keyevents/Keybindings";
+import {isKeybidingForEvent} from "./keyevents/Keybindings";
 
 export type UserEvent = KeyboardEvent | ClipboardEvent;
 
@@ -35,123 +36,166 @@ export const handleUserEvent = (application: ApplicationComponent,
             return;
         }
 
-        let actions = getActionForKeyboardEvent(event);
+        // if (isKeybidingForEvent && !isInProgress(job)) {
+        //     application.closeFocusedPane();
+        //
+        //     application.forceUpdate();
+        //
+        //     event.stopPropagation();
+        //     event.preventDefault();
+        //     return;
+        // }
 
-        // No keybinding just regular text
-        if (actions.length === 0) {
-            // If no job then send to prompt
-            if (!isInProgress(job)) {
-                prompt.setPreviousKeyCode(event);
-            } else { // else send to running job
-                job.props.job.write(event);
-            }
+        // Change tab action
+        if (isKeybidingForEvent(event, KeyboardAction.tabFocus)) {
+            const position = parseInt(event.key, 10);
+            application.focusTab(position);
+
+            event.stopPropagation();
+            event.preventDefault();
             return;
         }
 
-        for (let actionInd = 0; actionInd < actions.length; actionInd++) {
-            let action = actions[actionInd];
-            switch (action) {
-                // CLI commands
-                case KeyboardAction.cliRunCommand:
-                    if (!isInProgress(job)) {
-                        prompt.focus();
-                        prompt.execute((event.target as HTMLElement).innerText);
-                    }
-                    break;
-                case KeyboardAction.cliInterrupt:
-                    // CLI interrupt is special and terminates all other keybindings after it
-                    if (isInProgress(job)) {
-                        job.props.job.interrupt();
-                        event.stopPropagation();
-                        event.preventDefault();
-                        return;
-                    }
-                    break;
-                case KeyboardAction.cliClearJobs:
-                    if (!isInProgress(job)) {
-                        session.props.session.clearJobs();
-                    }
-                    break;
-                case KeyboardAction.cliDeleteWord:
-                    if (!isInProgress(job)) {
-                        prompt.focus();
-                        prompt.deleteWord();
-                    }
-                    break;
-                case KeyboardAction.cliClearText:
-                    if (!isInProgress(job)) {
-                        prompt.focus();
-                        prompt.clear();
-                    }
-                    break;
-                case KeyboardAction.cliAppendLastArgumentOfPreviousCommand:
-                    prompt.focus();
-                    prompt.appendLastLArgumentOfPreviousCommand();
-                    break;
-                case KeyboardAction.cliHistoryPrevious:
-                    if (!isInProgress(job) && !prompt.isAutocompleteShown()) {
-                        prompt.focus();
-                        prompt.setPreviousHistoryItem();
-                    }
-                    break;
-                case KeyboardAction.cliHistoryNext:
-                    if (!isInProgress(job) && !prompt.isAutocompleteShown()) {
-                        prompt.focus();
-                        prompt.setNextHistoryItem();
-                    }
-                    break;
-                // Tab Commands
-                case KeyboardAction.tabClose:
-                    if (!isInProgress(job)) {
-                        application.closeFocusedPane();
-                        application.forceUpdate();
-                    }
-                    break;
-                case KeyboardAction.tabFocus:
-                    const position = parseInt(event.key, 10);
-                    application.focusTab(position);
-                    break;
-                // Search commands
-                case KeyboardAction.editFindClose:
-                    if (search.isFocused) {
-                        search.clearSelection();
-                        setTimeout(() => prompt.focus(), 0);
-                    }
-                    break;
-                // Autocomplete commands
-                case KeyboardAction.autocompleteInsertCompletion:
-                    if (prompt.isAutocompleteShown()) {
-                        prompt.focus();
-                        prompt.applySuggestion();
-                    }
-                    break;
-                case KeyboardAction.autocompletePreviousSuggestion:
-                    if (prompt.isAutocompleteShown()) {
-                        prompt.focus();
-                        prompt.focusPreviousSuggestion();
-                    }
-                    break;
-                case KeyboardAction.autocompleteNextSuggestion:
-                    if (prompt.isAutocompleteShown()) {
-                        prompt.focus();
-                        prompt.focusNextSuggestion();
-                    }
-                    break;
-                // Dev commands
-                case KeyboardAction.developerToggleDebugMode:
-                    window.DEBUG = !window.DEBUG;
-                    require("devtron").install();
-                    console.log(`Debugging mode has been ${window.DEBUG ? "enabled" : "disabled"}.`);
-                    application.forceUpdate();
-                    break;
+        // Enable debug mode
+        if (isKeybidingForEvent(event, KeyboardAction.developerToggleDebugMode)) {
+            window.DEBUG = !window.DEBUG;
 
-                default:
-                    console.warn("Missing action code for " + KeyboardAction[action]);
+            require("devtron").install();
+            console.log(`Debugging mode has been ${window.DEBUG ? "enabled" : "disabled"}.`);
+
+            application.forceUpdate();
+
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+
+        // Console clear
+        if (isKeybidingForEvent(event, KeyboardAction.cliClearJobs) && !isInProgress(job)) {
+            session.props.session.clearJobs();
+
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+
+        if (event.metaKey) {
+            event.stopPropagation();
+            // Don't prevent default to be able to open developer tools and such.
+            return;
+        }
+
+        if (search.isFocused) {
+            // Search close
+            if (isKeybidingForEvent(event, KeyboardAction.editFindClose)) {
+                search.clearSelection();
+                setTimeout(() => prompt.focus(), 0);
+
+                event.stopPropagation();
+                event.preventDefault();
+                return;
+            }
+
+            return;
+        }
+
+
+        if (isInProgress(job) && !isModifierKey(event)) {
+            // CLI interrupt
+            if (isKeybidingForEvent(event, KeyboardAction.cliInterrupt)) {
+                job.props.job.interrupt();
+            } else {
+                job.props.job.write(event);
+            }
+
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+
+        prompt.focus();
+
+        // Append last argument to prompt
+        if (isKeybidingForEvent(event, KeyboardAction.cliAppendLastArgumentOfPreviousCommand)) {
+            prompt.appendLastLArgumentOfPreviousCommand();
+
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
+
+        if (!isInProgress(job)) {
+            // CLI Delete word
+            if (isKeybidingForEvent(event, KeyboardAction.cliDeleteWord)) {
+                prompt.deleteWord();
+
+                event.stopPropagation();
+                event.preventDefault();
+                return;
+            }
+
+            // CLI execute command
+            if (isKeybidingForEvent(event, KeyboardAction.cliRunCommand)) {
+                prompt.execute((event.target as HTMLElement).innerText);
+
+                event.stopPropagation();
+                event.preventDefault();
+                return;
+            }
+
+            // CLI clear
+            if (isKeybidingForEvent(event, KeyboardAction.cliClearText)) {
+                prompt.clear();
+
+                event.stopPropagation();
+                event.preventDefault();
+                return;
+            }
+
+            if (prompt.isAutocompleteShown()) {
+                if (isKeybidingForEvent(event, KeyboardAction.autocompleteInsertCompletion)) {
+                    prompt.applySuggestion();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
+
+                if (isKeybidingForEvent(event, KeyboardAction.autocompletePreviousSuggestion)) {
+                    prompt.focusPreviousSuggestion();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
+
+                if (isKeybidingForEvent(event, KeyboardAction.autocompleteNextSuggestion)) {
+                    prompt.focusNextSuggestion();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
+            } else {
+                if (isKeybidingForEvent(event, KeyboardAction.cliHistoryPrevious)) {
+                    prompt.setPreviousHistoryItem();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
+
+                if (isKeybidingForEvent(event, KeyboardAction.cliHistoryNext)) {
+                    prompt.setNextHistoryItem();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return;
+                }
             }
         }
 
-        event.stopPropagation();
-        event.preventDefault();
+        prompt.setPreviousKeyCode(event);
     };
 
 function isInProgress(job: JobComponent): boolean {

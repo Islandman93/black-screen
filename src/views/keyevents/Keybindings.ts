@@ -1,23 +1,10 @@
 import {KeyCode, KeyboardAction} from "../../Enums";
+import {error} from "../../utils/Common";
 
 export type KeybindingType = {
     action: KeyboardAction,
     keybinding: (e: KeyboardEvent) => boolean,
 };
-
-function isMeta(e: KeyboardEvent): boolean {
-    /**
-     * Decides if a keyboard event contains the meta key for all platforms
-     * Linux does not support the metaKey so it can be manually changed here
-     * Windows/OSX is simply e.metaKey
-     */
-    if (e.metaKey) {
-        return true;
-    } else if (process.platform === "linux") {
-        return e.ctrlKey;
-    }
-    return false;
-}
 
 export const KeybindingsForActions: KeybindingType[] = [
     // CLI commands
@@ -39,7 +26,8 @@ export const KeybindingsForActions: KeybindingType[] = [
     },
     {
         action: KeyboardAction.cliClearText,
-        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C,
+        // Need to include !shiftKey otherwise it will clear instead of copying
+        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C && !e.shiftKey,
     },
     {
         action: KeyboardAction.cliAppendLastArgumentOfPreviousCommand,
@@ -93,15 +81,21 @@ export const KeybindingsForActions: KeybindingType[] = [
     },
 ];
 
-export function getActionForKeyboardEvent(event: KeyboardEvent) {
-    // filter the action that corresponds to the key press
-    let filteredCommands: KeybindingType[] = KeybindingsForActions.filter((keybinding) => {
-        return keybinding.keybinding(event);
+export function isKeybidingForEvent(event: KeyboardEvent, action: KeyboardAction): boolean {
+    /**
+     * Finds the keybinding for the given action and returns the result of the keybinding function
+     */
+    let matchingKeyboardAction = KeybindingsForActions.filter((keybinding) => {
+        return keybinding.action === action;
     });
-    return filteredCommands.map((command) => command.action);
+    if (matchingKeyboardAction.length === 0) {
+      error("No matching keybinding for action: " + KeyboardAction[action]);
+      return false;
+    }
+    return matchingKeyboardAction[0].keybinding(event);
 }
 
-
+// Menu Stuff
 export type KeybindingMenuType = {
     action: KeyboardAction,
     accelerator: string,
