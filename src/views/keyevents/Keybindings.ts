@@ -1,166 +1,215 @@
 import {KeyCode, KeyboardAction} from "../../Enums";
 
 export type KeybindingType = {
-  action: KeyboardAction,
-  keybinding: (e: KeyboardEvent) => boolean,
+    action: KeyboardAction,
+    keybinding: (e: KeyboardEvent) => boolean,
 };
 
 function isMeta(e: KeyboardEvent): boolean {
-  /**
-   * Decides if a keyboard event contains the meta key for all platforms
-   * Linux does not support the metaKey so it can be manually changed here
-   * Windows/OSX is simply e.metaKey
-   */
-  if (e.metaKey) {
-    return true;
-  } else if (process.platform === "linux") {
-    return e.ctrlKey;
-  }
-  return false;
+    /**
+     * Decides if a keyboard event contains the meta key for all platforms
+     * Linux does not support the metaKey so it can be manually changed here
+     * Windows/OSX is simply e.metaKey
+     */
+    if (e.metaKey) {
+        return true;
+    } else if (process.platform === "linux") {
+        return e.ctrlKey;
+    }
+    return false;
 }
 
 export const KeybindingsForActions: KeybindingType[] = [
     // CLI commands
     {
-      action: KeyboardAction.cliRunCommand,
-      keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.CarriageReturn,
+        action: KeyboardAction.cliRunCommand,
+        keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.CarriageReturn,
     },
     {
-      action: KeyboardAction.cliInterrupt,
-      keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C,
+        action: KeyboardAction.cliInterrupt,
+        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C,
     },
     {
-      action: KeyboardAction.cliClearJobs,
-      keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.L,
+        action: KeyboardAction.cliClearJobs,
+        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.L,
     },
     {
-      action: KeyboardAction.cliDeleteWord,
-      keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.W,
+        action: KeyboardAction.cliDeleteWord,
+        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.W,
     },
     {
-      action: KeyboardAction.cliClearText,
-      keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C,
+        action: KeyboardAction.cliClearText,
+        keybinding: (e: KeyboardEvent) => e.ctrlKey && e.keyCode === KeyCode.C,
     },
     {
-      action: KeyboardAction.cliAppendLastArgumentOfPreviousCommand,
-      keybinding: (e: KeyboardEvent) => e.altKey && e.keyCode === KeyCode.Period,
+        action: KeyboardAction.cliAppendLastArgumentOfPreviousCommand,
+        keybinding: (e: KeyboardEvent) => e.altKey && e.keyCode === KeyCode.Period,
     },
     {
-      action: KeyboardAction.cliHistoryPrevious,
-      keybinding: (e: KeyboardEvent) => {
-        return (e.ctrlKey && e.keyCode === KeyCode.P) || (e.keyCode === KeyCode.Up);
-      },
+        action: KeyboardAction.cliHistoryPrevious,
+        keybinding: (e: KeyboardEvent) => {
+            return (e.ctrlKey && e.keyCode === KeyCode.P) || (e.keyCode === KeyCode.Up);
+        },
     },
     {
-      action: KeyboardAction.cliHistoryNext,
-      keybinding: (e: KeyboardEvent) => {
-        return (e.ctrlKey && e.keyCode === KeyCode.N) || (e.keyCode === KeyCode.Down);
-      },
+        action: KeyboardAction.cliHistoryNext,
+        keybinding: (e: KeyboardEvent) => {
+            return (e.ctrlKey && e.keyCode === KeyCode.N) || (e.keyCode === KeyCode.Down);
+        },
     },
     // autocomplete commands
     {
-      action: KeyboardAction.autocompleteInsertCompletion,
-      keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Tab,
+        action: KeyboardAction.autocompleteInsertCompletion,
+        keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Tab,
     },
     {
-      action: KeyboardAction.autocompletePreviousSuggestion,
-      keybinding: (e: KeyboardEvent) => {
-        return (e.ctrlKey && e.keyCode === KeyCode.P) || (e.keyCode === KeyCode.Up);
-      },
+        action: KeyboardAction.autocompletePreviousSuggestion,
+        keybinding: (e: KeyboardEvent) => {
+            return (e.ctrlKey && e.keyCode === KeyCode.P) || (e.keyCode === KeyCode.Up);
+        },
     },
     {
-      action: KeyboardAction.autocompleteNextSuggestion,
-      keybinding: (e: KeyboardEvent) => {
-        return (e.ctrlKey && e.keyCode === KeyCode.N) || (e.keyCode === KeyCode.Down);
-      },
+        action: KeyboardAction.autocompleteNextSuggestion,
+        keybinding: (e: KeyboardEvent) => {
+            return (e.ctrlKey && e.keyCode === KeyCode.N) || (e.keyCode === KeyCode.Down);
+        },
     },
     // tab commands
+    // tab new is handled in the menu look at KeybindingsForMenu
+    // {
+    //     action: KeyboardAction.tabNew,
+    //     keybinding: (e: KeyboardEvent) => isMeta(e) && e.keyCode === KeyCode.T,
+    // },
     {
-      action: KeyboardAction.tabNew,
-      keybinding: (e: KeyboardEvent) => isMeta(e) && e.keyCode === KeyCode.T,
-    },
-    {
-      action: KeyboardAction.tabFocus,
-      keybinding: (e: KeyboardEvent) => {
-        return (e.ctrlKey && e.keyCode >= KeyCode.One && e.keyCode <= KeyCode.Nine);
-      },
+        action: KeyboardAction.tabFocus,
+        keybinding: (e: KeyboardEvent) => {
+            return (e.ctrlKey && e.keyCode >= KeyCode.One && e.keyCode <= KeyCode.Nine);
+        },
     },
     // search commands
     {
-      action: KeyboardAction.editFindClose,
-      keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Escape,
+        action: KeyboardAction.editFindClose,
+        keybinding: (e: KeyboardEvent) => e.keyCode === KeyCode.Escape,
     },
 ];
 
 export function getActionForKeyboardEvent(event: KeyboardEvent) {
-  // filter the action that corresponds to the key press
-  let filteredCommands: KeybindingType[] = KeybindingsForActions.filter((keybinding) => {
-      return keybinding.keybinding(event);
-  });
-  return filteredCommands.map((command) => command.action);
+    // filter the action that corresponds to the key press
+    let filteredCommands: KeybindingType[] = KeybindingsForActions.filter((keybinding) => {
+        return keybinding.keybinding(event);
+    });
+    return filteredCommands.map((command) => command.action);
 }
 
-// export const KeybindingsForMenu: KeybindingType[] = [
-//     action: KeyboardAction.tabPrevious,
-//     keybinding: "Meta+K,
-//     },
-  //   action: KeyboardAction.tabNext,
-  //   keybinding: "Meta+J,
-  //   },
-  //   action: KeyboardAction.tabClose,
-  //   keybinding: ["Meta+W, "Ctrl+D"]
-  //   },
-  //   // edit/clipboard commands
-  //   action: KeyboardAction.clipboadCopy,
-  //   keybinding: "Meta+C,
-  //   },
-  //   action: KeyboardAction.clipboadCut,
-  //   keybinding: "Meta+X,
-  //   },
-  //   action: KeyboardAction.clipboadPaste,
-  //   keybinding: "Meta+V,
-  //   },
-  //   action: KeyboardAction.editUndo,
-  //   keybinding: "Meta+Z,
-  //   },
-  //   action: KeyboardAction.editRedo,
-  //   keybinding: "Meta+Shift+Z,
-  //   },
-  //   action: KeyboardAction.editSelectAll,
-  //   keybinding: "Meta+A,
-  //   },
-  //   action: KeyboardAction.editFind,
-  //   keybinding: "Meta+F,
-  //   },
-  //   action: KeyboardAction.editFindClose,
-  //   keybinding: "Esc,
-  //   },
-  //   // window commands
-  //   action: KeyboardAction.windowSplitHorizontally,
-  //   keybinding: "Meta+-,
-  //   },
-  //   action: KeyboardAction.windowSplitVertically,
-  //   keybinding: "Meta+\\,
-  //   },
-  //   // view commands
-  //   action: KeyboardAction.viewReload,
-  //   keybinding: "Meta+R,
-  //   },
-  //   action: KeyboardAction.viewToggleFullScreen,
-  //   keybinding: "Meta+Ctrl+F,
-  //   },
-  //   // black screen commands
-  //   action: KeyboardAction.blackScreenHide,
-  //   keybinding: "Meta+H,
-  //   },
-  //   action: KeyboardAction.blackScreenQuit,
-  //   keybinding: "Meta+Q,
-  //   },
-  //   // developer
-  //   action: KeyboardAction.developerToggleTools,
-  //   keybinding: "Meta+Alt+I,
-  //   },
-  //   action: KeyboardAction.developerToggleDebugMode,
-  //   keybinding: "Meta+D,
-  //   },
-  // ]
+
+export type KeybindingMenuType = {
+    action: KeyboardAction,
+    accelerator: string,
+};
+
+const CopyAccelerator = process.platform === "darwin" ? "Command+C" : "Ctrl+Shift+C";
+const ToggleFullScreenAccelerator = process.platform === "darwin" ? "Command+F" : "Ctrl+Shift+F";
+
+export const KeybindingsForMenu: KeybindingMenuType[] = [
+    {
+        action: KeyboardAction.tabNew,
+        accelerator: "CmdOrCtrl+T",
+    },
+    {
+        action: KeyboardAction.tabPrevious,
+        accelerator: "CmdOrCtrl+K",
+    },
+    {
+        action: KeyboardAction.tabNext,
+        accelerator: "CmdOrCtrl+J",
+    },
+    {
+        action: KeyboardAction.tabClose,
+        accelerator: "CmdOrCtrl+W",
+    },
+    // edit/clipboard commands
+    {
+        action: KeyboardAction.clipboardCopy,
+        accelerator: CopyAccelerator,
+    },
+    {
+        action: KeyboardAction.clipboardCut,
+        accelerator: "CmdOrCtrl+X",
+    },
+    {
+        action: KeyboardAction.clipboardPaste,
+        accelerator: "CmdOrCtrl+V",
+    },
+    {
+        action: KeyboardAction.editUndo,
+        accelerator: "CmdOrCtrl+Z",
+    },
+    {
+        action: KeyboardAction.editRedo,
+        accelerator: "CmdOrCtrl+Shift+Z",
+    },
+    {
+        action: KeyboardAction.editSelectAll,
+        accelerator: "CmdOrCtrl+A",
+    },
+    {
+        action: KeyboardAction.editFind,
+        accelerator: "CmdOrCtrl+F",
+    },
+    {
+        action: KeyboardAction.editFindClose,
+        accelerator: "Esc",
+    },
+    // window commands
+    {
+        action: KeyboardAction.windowSplitHorizontally,
+        accelerator: "CmdOrCtrl+-",
+    },
+    {
+        action: KeyboardAction.windowSplitVertically,
+        accelerator: "CmdOrCtrl+\\",
+    },
+    // view commands
+    {
+        action: KeyboardAction.viewReload,
+        accelerator: "CmdOrCtrl+R",
+    },
+    {
+        action: KeyboardAction.viewToggleFullScreen,
+        accelerator: ToggleFullScreenAccelerator,
+    },
+    // black screen commands
+    {
+        action: KeyboardAction.blackScreenHide,
+        accelerator: "CmdOrCtrl+H",
+    },
+    {
+        action: KeyboardAction.blackScreenQuit,
+        accelerator: "CmdOrCtrl+Q",
+    },
+    {
+        action: KeyboardAction.blackScreenHideOthers,
+        accelerator: "CmdOrCtrl+Alt+H",
+    },
+    // developer
+    {
+        action: KeyboardAction.developerToggleTools,
+        accelerator: "CmdOrCtrl+Alt+I",
+    },
+    {
+        action: KeyboardAction.developerToggleDebugMode,
+        accelerator: "CmdOrCtrl+D",
+    },
+];
+
+
+export function getAccleratorForAction(action: KeyboardAction): string {
+    /**
+     * Returns the accelerator for a given keyboard action
+     */
+    // Find the matching menu item by keyboardAction (should only ever return one item)
+    let matchingMenuItem = KeybindingsForMenu.filter((menuAction) => {
+        return menuAction.action === action;
+    })[0];
+    return matchingMenuItem.accelerator;
+}

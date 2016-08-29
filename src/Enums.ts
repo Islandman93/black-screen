@@ -119,9 +119,9 @@ export enum KeyboardAction {
     tabNext,
     tabClose,
     // edit/clipboard commands
-    clipboadCopy,
-    clipboadCut,
-    clipboadPaste,
+    clipboardCopy,
+    clipboardCut,
+    clipboardPaste,
     editUndo,
     editRedo,
     editSelectAll,
@@ -136,6 +136,7 @@ export enum KeyboardAction {
     // black screen commands
     blackScreenHide,
     blackScreenQuit,
+    blackScreenHideOthers,
     // developer
     developerToggleTools,
     developerToggleDebugMode,
